@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Field Instruments — Webpage Annotation Overlay
 // @namespace    https://mbparks.com/fieldinstruments
-// @version      1.1.0
+// @version      1.1.1
 // @description  Annotate any webpage with persistent highlights, margin notes, arrows, labels, multi-page collections, evidence snapshots, and Field Instruments handoff exports.
 // @author       Michael Parks / Field Instruments
 // @match        http://*/*
@@ -18,7 +18,7 @@
   'use strict';
 
   const APP_NAME = 'Field Instruments Web Annotator';
-  const VERSION = '1.1.0';
+  const VERSION = '1.1.1';
   const STORAGE_PREFIX = 'fi-web-annotator:v1:';
   const SETTINGS_KEY = `${STORAGE_PREFIX}settings`;
   const COLLECTIONS_KEY = `${STORAGE_PREFIX}collections`;
@@ -55,7 +55,7 @@
     exportScope: 'page',
     mode: 'idle',
     visible: true,
-    dockOpen: true,
+    dockOpen: false,
     panelOpen: false,
     filter: '',
     draftArrow: null,
