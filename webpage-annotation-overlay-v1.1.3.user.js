@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Field Instruments — Webpage Annotation Overlay
 // @namespace    https://mbparks.com/fieldinstruments
-// @version      1.1.2
+// @version      1.1.3
 // @description  Annotate any webpage with persistent highlights, margin notes, arrows, labels, multi-page collections, evidence snapshots, and Field Instruments handoff exports.
 // @author       Michael Parks / Field Instruments
 // @match        http://*/*
@@ -18,7 +18,7 @@
   'use strict';
 
   const APP_NAME = 'Field Instruments Web Annotator';
-  const VERSION = '1.1.2';
+  const VERSION = '1.1.3';
   const STORAGE_PREFIX = 'fi-web-annotator:v1:';
   const SETTINGS_KEY = `${STORAGE_PREFIX}settings`;
   const COLLECTIONS_KEY = `${STORAGE_PREFIX}collections`;
@@ -79,9 +79,6 @@
   let svg;
   let modal;
   let toastTimer;
-  let staticStyleSheet = null;
-  let dynamicStyleSheet = null;
-  let dynamicStyleCounter = 0;
 
   init();
 
@@ -252,7 +249,20 @@
     document.getElementById(HOST_ID)?.remove();
     host = document.createElement('div');
     host.id = HOST_ID;
-    host.hidden = true;
+
+    // Match the proven Link Garden mounting pattern. The host is isolated and
+    // fixed before it enters the page, so even a temporary stylesheet failure
+    // can never place the annotator's controls into the website's document flow.
+    host.style.all = 'initial';
+    host.style.position = 'fixed';
+    host.style.inset = '0';
+    host.style.width = '100vw';
+    host.style.height = '100vh';
+    host.style.zIndex = String(MAX_Z);
+    host.style.pointerEvents = 'none';
+    host.style.display = 'block';
+    host.style.contain = 'layout style';
+
     document.documentElement.appendChild(host);
     shadow = host.attachShadow({ mode: 'open' });
     installShadowStyles();
@@ -273,63 +283,26 @@
   }
 
   function installShadowStyles() {
-    const css = getStyles();
-
-    try {
-      if ('adoptedStyleSheets' in shadow && typeof CSSStyleSheet === 'function') {
-        staticStyleSheet = new CSSStyleSheet();
-        staticStyleSheet.replaceSync(css);
-        dynamicStyleSheet = new CSSStyleSheet();
-        dynamicStyleSheet.replaceSync('');
-        shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, staticStyleSheet, dynamicStyleSheet];
-        return;
-      }
-    } catch (error) {
-      console.warn(`${APP_NAME}: constructable stylesheet unavailable; using fallback`, error);
-      staticStyleSheet = null;
-      dynamicStyleSheet = null;
-    }
-
+    // Use the same simple Shadow DOM stylesheet strategy as Link Garden.
+    // Constructable stylesheets can report success yet fail to apply when a
+    // userscript sandbox and the page use different JavaScript realms.
     const style = document.createElement('style');
-    const nonceSource = document.querySelector('style[nonce], link[nonce], script[nonce]');
-    const nonce = nonceSource?.nonce || nonceSource?.getAttribute?.('nonce') || '';
-    if (nonce) style.setAttribute('nonce', nonce);
-    style.textContent = css;
+    style.setAttribute('data-fi-web-annotator-styles', VERSION);
+    style.textContent = getStyles();
     shadow.appendChild(style);
   }
 
   function clearDynamicStyles() {
-    dynamicStyleCounter = 0;
-    if (!dynamicStyleSheet) return;
-    try {
-      dynamicStyleSheet.replaceSync('');
-    } catch (error) {
-      console.warn(`${APP_NAME}: could not clear dynamic styles`, error);
-    }
+    // Dynamic positions are written directly to elements and replaced during
+    // each render, so there is no shared stylesheet state to clear.
   }
 
   function applyDynamicStyles(node, declarations) {
     if (!node || !declarations) return;
-
-    if (dynamicStyleSheet) {
-      const token = `s${++dynamicStyleCounter}`;
-      node.setAttribute('data-fi-style', token);
-      const body = Object.entries(declarations)
-        .filter(([, value]) => value !== undefined && value !== null && value !== '')
-        .map(([property, value]) => `${toCssProperty(property)}:${String(value)}!important`)
-        .join(';');
-      if (!body) return;
-      try {
-        dynamicStyleSheet.insertRule(`[data-fi-style="${token}"]{${body}}`, dynamicStyleSheet.cssRules.length);
-        return;
-      } catch (error) {
-        console.warn(`${APP_NAME}: dynamic stylesheet rule failed`, error);
-      }
-    }
-
-    // This fallback keeps ordinary sites working. Strict-CSP sites use the
-    // constructable stylesheet path above and never depend on inline styles.
-    Object.assign(node.style, declarations);
+    Object.entries(declarations).forEach(([property, value]) => {
+      if (value === undefined || value === null || value === '') return;
+      node.style.setProperty(toCssProperty(property), String(value), 'important');
+    });
   }
 
   function toCssProperty(property) {
