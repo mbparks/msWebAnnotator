@@ -1,6 +1,6 @@
 # Field Instruments — Webpage Annotation Overlay
 
-**Version 1.1.3**
+**Version 1.1.4**
 
 A self-contained Tampermonkey userscript for placing persistent highlights, margin notes, arrows, and labels over almost any webpage without modifying the source site.
 
@@ -103,6 +103,7 @@ Collection tools support:
 - Switching the active collection
 - Reviewing page, annotation, and snapshot totals
 - Opening indexed source pages
+- Permanently deleting an indexed page record, all of its annotations, and its saved snapshot after confirmation
 - Exporting the current page or the entire active collection
 - Deleting a collection while returning its pages to the built-in **Inbox**
 
@@ -144,7 +145,7 @@ Snapshots are preservation aids, not forensic disk images or pixel-perfect scree
 
 - A modern desktop browser
 - The Tampermonkey browser extension
-- `webpage-annotation-overlay-v1.1.3.user.js`
+- `webpage-annotation-overlay-v1.1.4.user.js`
 
 ### Install manually
 
@@ -152,12 +153,12 @@ Snapshots are preservation aids, not forensic disk images or pixel-perfect scree
 2. Open the Tampermonkey dashboard.
 3. Open the existing Webpage Annotation Overlay script, or choose **Create a new script**.
 4. Delete the old or starter code.
-5. Copy the complete contents of `webpage-annotation-overlay-v1.1.3.user.js` into the editor.
+5. Copy the complete contents of `webpage-annotation-overlay-v1.1.4.user.js` into the editor.
 6. Save the script.
 7. Disable or remove older copies of Webpage Annotation Overlay.
 8. Reload the webpage.
 
-Do not leave v1.1.1, v1.1.2, or another copy enabled beside v1.1.3. Multiple active versions can create duplicate launchers or allow the older interface to continue affecting the page.
+Do not leave v1.1.1, v1.1.2, or another copy enabled beside v1.1.4. Multiple active versions can create duplicate launchers or allow the older interface to continue affecting the page.
 
 ## Basic workflow
 
@@ -224,9 +225,12 @@ Press `Escape` to cancel an active drawing mode or close the current editor.
 4. Visit additional pages and select the same collection.
 5. Add annotations and snapshots.
 6. Open **Collection overview** to review the assembled package.
-7. Change the export scope to **Active collection** before exporting.
+7. Use **Delete** beside a page only when its saved page record, annotations, and snapshot should be permanently removed. The annotator shows a confirmation before deletion.
+8. Change the export scope to **Active collection** before exporting.
 
 A page enters the indexed workspace after it contains an annotation, contains a snapshot, or is intentionally assigned to a collection.
+
+Deleting a page from Collection Overview removes its complete stored record and its entry in the collection index. This action is different from **Clear this page**, which removes only the current page's annotations and preserves its saved snapshot.
 
 ## Export formats
 
@@ -319,7 +323,7 @@ Arrows preserve two point anchors: a start anchor and an end anchor.
 
 ## Site compatibility
 
-Version 1.1.3 uses the same proven Shadow DOM mounting pattern as Link Garden:
+Version 1.1.4 uses the same proven Shadow DOM mounting pattern as Link Garden:
 
 - The userscript host is fully isolated before it is inserted into the page
 - The host is fixed outside the site's normal document flow
@@ -358,13 +362,13 @@ The script is designed for ordinary HTTP and HTTPS webpages, including many sing
 
 ### The interface appears as unformatted text across the top of a page
 
-1. Confirm that the installed script reports **v1.1.3**.
+1. Confirm that the installed script reports **v1.1.4**.
 2. Disable or delete all older Webpage Annotation Overlay scripts.
 3. Save the current script in Tampermonkey.
 4. Hard reload the webpage.
 5. Confirm that only one **A** launcher appears.
 
-This symptom was addressed in v1.1.3 by replacing the earlier constructable-stylesheet implementation with the isolated Shadow DOM mounting pattern used by Link Garden.
+This symptom was addressed in v1.1.3 and remains fixed in v1.1.4 by replacing the earlier constructable-stylesheet implementation with the isolated Shadow DOM mounting pattern used by Link Garden.
 
 ### The launcher does not appear
 
@@ -376,7 +380,7 @@ This symptom was addressed in v1.1.3 by replacing the earlier constructable-styl
 
 ### The panel opens automatically
 
-Version 1.1.3 should initialize collapsed. Confirm that older versions are disabled and that the script header shows `@version 1.1.3`.
+Version 1.1.4 should initialize collapsed. Confirm that older versions are disabled and that the script header shows `@version 1.1.4`.
 
 ### Highlight says to select text first
 
@@ -424,7 +428,7 @@ Empty and unassigned pages are not indexed.
 ## Userscript metadata
 
 - **Name:** Field Instruments — Webpage Annotation Overlay
-- **Version:** 1.1.3
+- **Version:** 1.1.4
 - **Namespace:** `https://mbparks.com/fieldinstruments`
 - **Run timing:** `document-idle`
 - **Page scope:** HTTP and HTTPS pages
@@ -435,12 +439,20 @@ Empty and unassigned pages are not indexed.
 ## Package contents
 
 ```text
-webpage-annotation-overlay-v1.1.3/
-├── webpage-annotation-overlay-v1.1.3.user.js
+webpage-annotation-overlay-v1.1.4/
+├── webpage-annotation-overlay-v1.1.4.user.js
 └── README.md
 ```
 
 ## Version history
+
+### 1.1.4
+
+- Added a visible **Delete** button beside every page in Collection Overview
+- Added a confirmation that names the page and summarizes the annotation and snapshot data that will be removed
+- Permanently deletes the selected page record, all annotations, its saved snapshot, and the collection index entry
+- Immediately clears live annotation state when the deleted record belongs to the currently open webpage
+- Keeps the collection overview open and refreshes page, annotation, and snapshot totals after deletion
 
 ### 1.1.3
 
